@@ -289,18 +289,10 @@ class Identifier(Nonterm):
     def reduce_IDENT(self, ident):
         self.val = ident.clean_value
 
-    @parsing.inline(0)
-    def reduce_UnreservedKeyword(self, *_):
-        pass
-
 
 class PtrIdentifier(Nonterm):
     @parsing.inline(0)
     def reduce_Identifier(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_PartialReservedKeyword(self, *_):
         pass
 
 
@@ -481,16 +473,6 @@ class KeywordMeta(parsing.NontermMeta):
 
     def __init__(cls, name, bases, dct, *, type):
         super().__init__(name, bases, dct)
-
-
-class UnreservedKeyword(Nonterm, metaclass=KeywordMeta,
-                        type=keywords.UNRESERVED_KEYWORD):
-    pass
-
-
-class PartialReservedKeyword(Nonterm, metaclass=KeywordMeta,
-                             type=keywords.PARTIAL_RESERVED_KEYWORD):
-    pass
 
 
 class ReservedKeyword(Nonterm, metaclass=KeywordMeta,
