@@ -225,7 +225,7 @@ class FuncCallArgExpr(Nonterm):
             kids[0].val,
         )
 
-    def reduce_AnyIdentifier_ASSIGN_Expr(self, *kids):
+    def reduce_Identifier_ASSIGN_Expr(self, *kids):
         self.val = (
             kids[0].val,
             kids[0].context,
@@ -290,14 +290,8 @@ class Identifier(Nonterm):
         self.val = ident.clean_value
 
 
-class AnyIdentifier(Nonterm):
-    @parsing.inline(0)
-    def reduce_Identifier(self, *kids):
-        pass
-
-
 class DottedIdents(
-        ListNonterm, element=AnyIdentifier, separator=tokens.T_DOT):
+        ListNonterm, element=Identifier, separator=tokens.T_DOT):
     pass
 
 
@@ -312,7 +306,7 @@ class ModuleName(
 
 
 class ColonedIdents(
-        ListNonterm, element=AnyIdentifier, separator=tokens.T_DOUBLECOLON):
+        ListNonterm, element=Identifier, separator=tokens.T_DOUBLECOLON):
     pass
 
 
@@ -339,7 +333,7 @@ class BaseName(Nonterm):
 
 # this can appear in link/property definitions
 class PtrName(Nonterm):
-    def reduce_PtrIdentifier(self, ptr_identifier):
+    def reduce_Identifier(self, ptr_identifier):
         assert ptr_identifier.val
         self.val = [ptr_identifier.val]
 
@@ -411,7 +405,7 @@ class PathNodeName(Nonterm):
     # PARTIAL_RESERVED_KEYWORD and does not need to be quoted or
     # parenthesized.
 
-    def reduce_PtrIdentifier(self, *kids):
+    def reduce_Identifier(self, *kids):
         self.val = qlast.ObjectRef(
             module=None,
             name=kids[0].val)
@@ -429,7 +423,7 @@ class AnyNodeName(Nonterm):
     # CANNOT be used in Expr productions because it will cause
     # ambiguity with NodeName, etc.
 
-    def reduce_AnyIdentifier(self, *kids):
+    def reduce_Identifier(self, *kids):
         self.val = qlast.ObjectRef(
             module=None,
             name=kids[0].val)
