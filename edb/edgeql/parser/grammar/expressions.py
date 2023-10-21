@@ -66,6 +66,7 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
+    # XXX! This breaks things!!!
     def reduce_For2(self, *kids):
         r"%reduce FOR Identifier IN AtomicExpr ParenExpr"
         _, alias, _, iterator, result = kids
