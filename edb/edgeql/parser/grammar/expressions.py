@@ -290,30 +290,10 @@ class Identifier(Nonterm):
         self.val = ident.clean_value
 
 
-class PtrIdentifier(Nonterm):
-    @parsing.inline(0)
-    def reduce_Identifier(self, *_):
-        pass
-
-
 class AnyIdentifier(Nonterm):
     @parsing.inline(0)
-    def reduce_PtrIdentifier(self, *kids):
+    def reduce_Identifier(self, *kids):
         pass
-
-    def reduce_ReservedKeyword(self, *kids):
-        name = kids[0].val
-        if name[:2] == '__' and name[-2:] == '__':
-            # There are a few reserved keywords like __std__ and __subject__
-            # that can be used in paths but are prohibited to be used
-            # anywhere else. So just as the tokenizer prohibits using
-            # __names__ in general, we enforce the rule here for the
-            # few remaining reserved __keywords__.
-            raise errors.EdgeQLSyntaxError(
-                "identifiers surrounded by double underscores are forbidden",
-                context=kids[0].context)
-
-        self.val = name
 
 
 class DottedIdents(
