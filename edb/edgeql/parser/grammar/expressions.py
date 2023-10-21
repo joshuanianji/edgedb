@@ -181,32 +181,6 @@ class PathStep(Nonterm):
             direction=s_pointers.PointerDirection.Outbound
         )
 
-    def reduce_DOT_ICONST(self, *kids):
-        # this is a valid link-like syntax for accessing unnamed tuples
-        from edb.schema import pointers as s_pointers
-
-        self.val = qlast.Ptr(
-            name=kids[1].val,
-            direction=s_pointers.PointerDirection.Outbound
-        )
-
-    def reduce_DOTBW_PathStepName(self, *kids):
-        from edb.schema import pointers as s_pointers
-
-        self.val = qlast.Ptr(
-            name=kids[1].val.name,
-            direction=s_pointers.PointerDirection.Inbound
-        )
-
-    def reduce_AT_PathNodeName(self, *kids):
-        from edb.schema import pointers as s_pointers
-
-        self.val = qlast.Ptr(
-            name=kids[1].val.name,
-            direction=s_pointers.PointerDirection.Outbound,
-            type='property'
-        )
-
 
 # Used in free shapes
 class FreeStepName(Nonterm):
