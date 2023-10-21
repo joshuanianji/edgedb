@@ -22,11 +22,9 @@ from __future__ import annotations
 from edb.common import parsing
 from edb.edgeql import ast as qlast
 
-from . import commondl
 from .expressions import *
 from .precedence import *  # NOQA
 from .tokens import *  # NOQA
-from .statements import *  # NOQA
 
 
 # The main EdgeQL grammar, all of whose productions should start with a
