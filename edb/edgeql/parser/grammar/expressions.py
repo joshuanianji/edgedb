@@ -134,10 +134,6 @@ class Expr(Nonterm):
         pass
 
 
-class ExprList(ListNonterm, element=Expr, separator=tokens.T_COMMA):
-    pass
-
-
 def ensure_path(expr):
     if not isinstance(expr, qlast.Path):
         expr = qlast.Path(steps=[expr])
@@ -266,38 +262,9 @@ class OptFuncArgList(Nonterm):
         self.val = []
 
 
-class PosCallArg(Nonterm):
-    def reduce_Expr(self, *kids):
-        self.val = kids[0].val
-
-
-class PosCallArgList(ListNonterm, element=PosCallArg,
-                     separator=tokens.T_COMMA):
-    pass
-
-
-class OptPosCallArgList(Nonterm):
-    @parsing.inline(0)
-    def reduce_PosCallArgList(self, *kids):
-        pass
-
-    def reduce_empty(self, *kids):
-        self.val = []
-
-
 class Identifier(Nonterm):
     def reduce_IDENT(self, ident):
         self.val = ident.clean_value
-
-
-class DottedIdents(
-        ListNonterm, element=Identifier, separator=tokens.T_DOT):
-    pass
-
-
-class DotName(Nonterm):
-    def reduce_DottedIdents(self, *kids):
-        self.val = '.'.join(part for part in kids[0].val)
 
 
 # this can appear anywhere
@@ -308,13 +275,6 @@ class BaseName(Nonterm):
     # @parsing.inline(0)
     # def reduce_QualifiedName(self, *kids):
     #     pass
-
-
-# this can appear in link/property definitions
-class PtrName(Nonterm):
-    def reduce_Identifier(self, ptr_identifier):
-        assert ptr_identifier.val
-        self.val = [ptr_identifier.val]
 
 
 class NodeName(Nonterm):
@@ -328,21 +288,6 @@ class NodeName(Nonterm):
             name=base_name.val[-1])
 
 
-class NodeNameList(ListNonterm, element=NodeName, separator=tokens.T_COMMA):
-    pass
-
-
-class PtrNodeName(Nonterm):
-    # NOTE: Generic short of fully-qualified name.
-    #
-    # This name is safe to be used in most DDL and SDL definitions.
-
-    def reduce_PtrName(self, ptr_name):
-        self.val = qlast.ObjectRef(
-            module='::'.join(ptr_name.val[:-1]) or None,
-            name=ptr_name.val[-1])
-
-
 class PathNodeName(Nonterm):
     # NOTE: A non-qualified name that can be an identifier or
     # PARTIAL_RESERVED_KEYWORD.
@@ -351,24 +296,6 @@ class PathNodeName(Nonterm):
     # definitions after LINK/POINTER. It can be an identifier including
     # PARTIAL_RESERVED_KEYWORD and does not need to be quoted or
     # parenthesized.
-
-    def reduce_Identifier(self, *kids):
-        self.val = qlast.ObjectRef(
-            module=None,
-            name=kids[0].val)
-
-
-class AnyNodeName(Nonterm):
-    # NOTE: A non-qualified name that can be ANY identifier.
-    #
-    # This name is used as part of paths after the DOT. It can be any
-    # identifier including RESERVED_KEYWORD and UNRESERVED_KEYWORD and
-    # does not need to be quoted or parenthesized.
-    #
-    # This is mainly used in DDL statements that have another keyword
-    # completely disambiguating that what comes next is a name. It
-    # CANNOT be used in Expr productions because it will cause
-    # ambiguity with NodeName, etc.
 
     def reduce_Identifier(self, *kids):
         self.val = qlast.ObjectRef(
