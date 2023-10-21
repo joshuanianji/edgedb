@@ -48,25 +48,25 @@ class EdgeQLGrammar(Nonterm):
     def reduce_STARTBLOCK_EdgeQLBlock_EOF(self, *kids):
         pass
 
-    @parsing.inline(1)
-    def reduce_STARTEXTENSION_CreateExtensionPackageCommandsBlock_EOF(self, *k):
-        pass
+    # @parsing.inline(1)
+    # def reduce_STARTEXTENSION_CreateExtensionPackageCommandsBlock_EOF(self, *k):
+    #     pass
 
-    @parsing.inline(1)
-    def reduce_STARTMIGRATION_CreateMigrationCommandsBlock_EOF(self, *kids):
-        pass
+    # @parsing.inline(1)
+    # def reduce_STARTMIGRATION_CreateMigrationCommandsBlock_EOF(self, *kids):
+    #     pass
 
-    @parsing.inline(1)
-    def reduce_STARTFRAGMENT_ExprStmt_EOF(self, *kids):
-        pass
+    # @parsing.inline(1)
+    # def reduce_STARTFRAGMENT_ExprStmt_EOF(self, *kids):
+    #     pass
 
-    @parsing.inline(1)
-    def reduce_STARTFRAGMENT_Expr_EOF(self, *kids):
-        pass
+    # @parsing.inline(1)
+    # def reduce_STARTFRAGMENT_Expr_EOF(self, *kids):
+    #     pass
 
-    @parsing.inline(1)
-    def reduce_STARTSDLDOCUMENT_SDLDocument(self, *kids):
-        pass
+    # @parsing.inline(1)
+    # def reduce_STARTSDLDOCUMENT_SDLDocument(self, *kids):
+    #     pass
 
 
 class EdgeQLBlock(Nonterm):
@@ -84,20 +84,20 @@ class SingleStatement(Nonterm):
         # Expressions
         pass
 
-    @parsing.inline(0)
-    def reduce_DDLStmt(self, _):
-        # Data definition commands
-        pass
+    # @parsing.inline(0)
+    # def reduce_DDLStmt(self, _):
+    #     # Data definition commands
+    #     pass
 
-    @parsing.inline(0)
-    def reduce_SessionStmt(self, _):
-        # Session-local utility commands
-        pass
+    # @parsing.inline(0)
+    # def reduce_SessionStmt(self, _):
+    #     # Session-local utility commands
+    #     pass
 
-    @parsing.inline(0)
-    def reduce_ConfigStmt(self, _):
-        # Configuration commands
-        pass
+    # @parsing.inline(0)
+    # def reduce_ConfigStmt(self, _):
+    #     # Configuration commands
+    #     pass
 
 
 class StatementBlock(

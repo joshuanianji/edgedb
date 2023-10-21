@@ -46,9 +46,9 @@ class ListNonterm(parsing.ListNonterm, element=None):
 
 
 class ExprStmt(Nonterm):
-    def reduce_WithBlock_ExprStmtCore(self, *kids):
-        self.val = kids[1].val
-        self.val.aliases = kids[0].val.aliases
+    # def reduce_WithBlock_ExprStmtCore(self, *kids):
+    #     self.val = kids[1].val
+    #     self.val.aliases = kids[0].val.aliases
 
     @parsing.inline(0)
     def reduce_ExprStmtCore(self, *kids):
@@ -64,25 +64,25 @@ class ExprStmtCore(Nonterm):
     def reduce_SimpleSelect(self, *kids):
         pass
 
-    @parsing.inline(0)
-    def reduce_SimpleGroup(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_SimpleGroup(self, *kids):
+    #     pass
 
-    @parsing.inline(0)
-    def reduce_InternalGroup(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_InternalGroup(self, *kids):
+    #     pass
 
-    @parsing.inline(0)
-    def reduce_SimpleInsert(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_SimpleInsert(self, *kids):
+    #     pass
 
-    @parsing.inline(0)
-    def reduce_SimpleUpdate(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_SimpleUpdate(self, *kids):
+    #     pass
 
-    @parsing.inline(0)
-    def reduce_SimpleDelete(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_SimpleDelete(self, *kids):
+    #     pass
 
 
 class AliasedExpr(Nonterm):
@@ -170,19 +170,19 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
-    def reduce_ForOpt(self, *kids):
-        r"%reduce FOR OPTIONAL Identifier IN AtomicExpr \
-                  UNION Expr"
-        _, _, alias, _, iterator, _, result = kids
-        self.val = qlast.ForQuery(
-            optional=True,
-            iterator_alias=alias.val,
-            iterator=iterator.val,
-            result=result.val,
-        )
+    # def reduce_ForOpt(self, *kids):
+    #     r"%reduce FOR OPTIONAL Identifier IN AtomicExpr \
+    #               UNION Expr"
+    #     _, _, alias, _, iterator, _, result = kids
+    #     self.val = qlast.ForQuery(
+    #         optional=True,
+    #         iterator_alias=alias.val,
+    #         iterator=iterator.val,
+    #         result=result.val,
+    #     )
 
     def reduce_For2(self, *kids):
-        r"%reduce FOR Identifier IN AtomicExpr Set"
+        r"%reduce FOR Identifier IN AtomicExpr ParenExpr"
         _, alias, _, iterator, result = kids
         self.val = qlast.ForQuery(
             iterator_alias=alias.val,
@@ -190,45 +190,61 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
-    def reduce_ForOpt2(self, *kids):
-        r"%reduce FOR OPTIONAL Identifier IN AtomicExpr Set"
-        _, _, alias, _, iterator, result = kids
-        self.val = qlast.ForQuery(
-            optional=True,
-            iterator_alias=alias.val,
-            iterator=iterator.val,
-            result=result.val,
-        )
+    # def reduce_For2(self, *kids):
+    #     r"%reduce FOR Identifier IN AtomicExpr Set"
+    #     _, alias, _, iterator, result = kids
+    #     self.val = qlast.ForQuery(
+    #         iterator_alias=alias.val,
+    #         iterator=iterator.val,
+    #         result=result.val,
+    #     )
+
+    # def reduce_ForOpt2(self, *kids):
+    #     r"%reduce FOR OPTIONAL Identifier IN AtomicExpr Set"
+    #     _, _, alias, _, iterator, result = kids
+    #     self.val = qlast.ForQuery(
+    #         optional=True,
+    #         iterator_alias=alias.val,
+    #         iterator=iterator.val,
+    #         result=result.val,
+    #     )
 
 
 class SimpleSelect(Nonterm):
     def reduce_Select(self, *kids):
-        r"%reduce SELECT OptionallyAliasedExpr \
-                  OptFilterClause OptSortClause OptSelectLimit"
+        r"%reduce SELECT Expr"
 
-        offset, limit = kids[4].val
+        self.val = qlast.SelectQuery(
+            result=kids[1].val,
+        )
 
-        if offset is not None or limit is not None:
-            subj = qlast.SelectQuery(
-                result=kids[1].val.expr,
-                result_alias=kids[1].val.alias,
-                where=kids[2].val,
-                orderby=kids[3].val,
-                implicit=True,
-            )
+    # def reduce_Select(self, *kids):
+    #     r"%reduce SELECT OptionallyAliasedExpr \
+    #               OptFilterClause OptSortClause OptSelectLimit"
 
-            self.val = qlast.SelectQuery(
-                result=subj,
-                offset=offset,
-                limit=limit,
-            )
-        else:
-            self.val = qlast.SelectQuery(
-                result=kids[1].val.expr,
-                result_alias=kids[1].val.alias,
-                where=kids[2].val,
-                orderby=kids[3].val,
-            )
+    #     offset, limit = kids[4].val
+
+    #     if offset is not None or limit is not None:
+    #         subj = qlast.SelectQuery(
+    #             result=kids[1].val.expr,
+    #             result_alias=kids[1].val.alias,
+    #             where=kids[2].val,
+    #             orderby=kids[3].val,
+    #             implicit=True,
+    #         )
+
+    #         self.val = qlast.SelectQuery(
+    #             result=subj,
+    #             offset=offset,
+    #             limit=limit,
+    #         )
+    #     else:
+    #         self.val = qlast.SelectQuery(
+    #             result=kids[1].val.expr,
+    #             result_alias=kids[1].val.alias,
+    #             where=kids[2].val,
+    #             orderby=kids[3].val,
+    #         )
 
 
 class ByClause(Nonterm):
@@ -1280,17 +1296,17 @@ class Expr(Nonterm):
     def reduce_Expr_Shape(self, *kids):
         self.val = qlast.Shape(expr=kids[0].val, elements=kids[1].val)
 
-    def reduce_EXISTS_Expr(self, *kids):
-        self.val = qlast.UnaryOp(op='EXISTS', operand=kids[1].val)
+    # def reduce_EXISTS_Expr(self, *kids):
+    #     self.val = qlast.UnaryOp(op='EXISTS', operand=kids[1].val)
 
-    def reduce_DISTINCT_Expr(self, *kids):
-        self.val = qlast.UnaryOp(op='DISTINCT', operand=kids[1].val)
+    # def reduce_DISTINCT_Expr(self, *kids):
+    #     self.val = qlast.UnaryOp(op='DISTINCT', operand=kids[1].val)
 
-    def reduce_DETACHED_Expr(self, *kids):
-        self.val = qlast.DetachedExpr(expr=kids[1].val)
+    # def reduce_DETACHED_Expr(self, *kids):
+    #     self.val = qlast.DetachedExpr(expr=kids[1].val)
 
-    def reduce_GLOBAL_NodeName(self, *kids):
-        self.val = qlast.GlobalExpr(name=kids[1].val)
+    # def reduce_GLOBAL_NodeName(self, *kids):
+    #     self.val = qlast.GlobalExpr(name=kids[1].val)
 
     def reduce_Expr_IndirectionEl(self, *kids):
         expr = kids[0].val
@@ -1301,112 +1317,112 @@ class Expr(Nonterm):
             self.val = qlast.Indirection(arg=expr,
                                          indirection=[kids[1].val])
 
-    @parsing.precedence(precedence.P_UMINUS)
-    def reduce_PLUS_Expr(self, *kids):
-        self.val = qlast.UnaryOp(op=kids[0].val, operand=kids[1].val)
+    # @parsing.precedence(precedence.P_UMINUS)
+    # def reduce_PLUS_Expr(self, *kids):
+    #     self.val = qlast.UnaryOp(op=kids[0].val, operand=kids[1].val)
 
-    @parsing.precedence(precedence.P_UMINUS)
-    def reduce_MINUS_Expr(self, *kids):
-        arg = kids[1].val
-        if isinstance(arg, qlast.BaseRealConstant):
-            # Special case for -<real_const> so that type inference based
-            # on literal size works correctly in the case of INT_MIN and
-            # friends.
-            self.val = type(arg)(value=arg.value, is_negative=True)
-        else:
-            self.val = qlast.UnaryOp(op=kids[0].val, operand=arg)
+    # @parsing.precedence(precedence.P_UMINUS)
+    # def reduce_MINUS_Expr(self, *kids):
+    #     arg = kids[1].val
+    #     if isinstance(arg, qlast.BaseRealConstant):
+    #         # Special case for -<real_const> so that type inference based
+    #         # on literal size works correctly in the case of INT_MIN and
+    #         # friends.
+    #         self.val = type(arg)(value=arg.value, is_negative=True)
+    #     else:
+    #         self.val = qlast.UnaryOp(op=kids[0].val, operand=arg)
 
-    def reduce_Expr_PLUS_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_PLUS_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_DOUBLEPLUS_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_DOUBLEPLUS_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_MINUS_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_MINUS_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_STAR_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_STAR_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_SLASH_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_SLASH_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_DOUBLESLASH_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_DOUBLESLASH_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_PERCENT_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_PERCENT_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_CIRCUMFLEX_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # def reduce_Expr_CIRCUMFLEX_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    @parsing.precedence(precedence.P_DOUBLEQMARK_OP)
-    def reduce_Expr_DOUBLEQMARK_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # @parsing.precedence(precedence.P_DOUBLEQMARK_OP)
+    # def reduce_Expr_DOUBLEQMARK_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    @parsing.precedence(precedence.P_COMPARE_OP)
-    def reduce_Expr_CompareOp_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-                               right=kids[2].val)
+    # @parsing.precedence(precedence.P_COMPARE_OP)
+    # def reduce_Expr_CompareOp_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
+    #                            right=kids[2].val)
 
-    def reduce_Expr_AND_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val.upper(),
-                               right=kids[2].val)
+    # def reduce_Expr_AND_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val.upper(),
+    #                            right=kids[2].val)
 
-    def reduce_Expr_OR_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val.upper(),
-                               right=kids[2].val)
+    # def reduce_Expr_OR_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val.upper(),
+    #                            right=kids[2].val)
 
-    def reduce_NOT_Expr(self, *kids):
-        self.val = qlast.UnaryOp(op=kids[0].val.upper(), operand=kids[1].val)
+    # def reduce_NOT_Expr(self, *kids):
+    #     self.val = qlast.UnaryOp(op=kids[0].val.upper(), operand=kids[1].val)
 
-    def reduce_Expr_LIKE_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='LIKE',
-                               right=kids[2].val)
+    # def reduce_Expr_LIKE_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op='LIKE',
+    #                            right=kids[2].val)
 
-    def reduce_Expr_NOT_LIKE_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='NOT LIKE',
-                               right=kids[3].val)
+    # def reduce_Expr_NOT_LIKE_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op='NOT LIKE',
+    #                            right=kids[3].val)
 
-    def reduce_Expr_ILIKE_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='ILIKE',
-                               right=kids[2].val)
+    # def reduce_Expr_ILIKE_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op='ILIKE',
+    #                            right=kids[2].val)
 
-    def reduce_Expr_NOT_ILIKE_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='NOT ILIKE',
-                               right=kids[3].val)
+    # def reduce_Expr_NOT_ILIKE_Expr(self, *kids):
+    #     self.val = qlast.BinOp(left=kids[0].val, op='NOT ILIKE',
+    #                            right=kids[3].val)
 
-    def reduce_Expr_IS_TypeExpr(self, *kids):
-        self.val = qlast.IsOp(left=kids[0].val, op='IS',
-                              right=kids[2].val)
+    # def reduce_Expr_IS_TypeExpr(self, *kids):
+    #     self.val = qlast.IsOp(left=kids[0].val, op='IS',
+    #                           right=kids[2].val)
 
-    @parsing.precedence(precedence.P_IS)
-    def reduce_Expr_IS_NOT_TypeExpr(self, *kids):
-        self.val = qlast.IsOp(left=kids[0].val, op='IS NOT',
-                              right=kids[3].val)
+    # @parsing.precedence(precedence.P_IS)
+    # def reduce_Expr_IS_NOT_TypeExpr(self, *kids):
+    #     self.val = qlast.IsOp(left=kids[0].val, op='IS NOT',
+    #                           right=kids[3].val)
 
-    def reduce_INTROSPECT_TypeExpr(self, *kids):
-        self.val = qlast.Introspect(type=kids[1].val)
+    # def reduce_INTROSPECT_TypeExpr(self, *kids):
+    #     self.val = qlast.Introspect(type=kids[1].val)
 
-    def reduce_Expr_IN_Expr(self, *kids):
-        inexpr = kids[2].val
-        self.val = qlast.BinOp(left=kids[0].val, op='IN',
-                               right=inexpr)
+    # def reduce_Expr_IN_Expr(self, *kids):
+    #     inexpr = kids[2].val
+    #     self.val = qlast.BinOp(left=kids[0].val, op='IN',
+    #                            right=inexpr)
 
-    @parsing.precedence(precedence.P_IN)
-    def reduce_Expr_NOT_IN_Expr(self, *kids):
-        inexpr = kids[3].val
-        self.val = qlast.BinOp(left=kids[0].val, op='NOT IN',
-                               right=inexpr)
+    # @parsing.precedence(precedence.P_IN)
+    # def reduce_Expr_NOT_IN_Expr(self, *kids):
+    #     inexpr = kids[3].val
+    #     self.val = qlast.BinOp(left=kids[0].val, op='NOT IN',
+    #                            right=inexpr)
 
     @parsing.precedence(precedence.P_TYPECAST)
     def reduce_LANGBRACKET_FullTypeExpr_RANGBRACKET_Expr(
