@@ -144,44 +144,11 @@ def ensure_path(expr):
     return expr
 
 
-def _float_to_path(self, token, context):
-    from edb.schema import pointers as s_pointers
-
-    # make sure that the float is of the type 0.1
-    parts = token.val.split('.')
-    if not (len(parts) == 2 and parts[0].isdigit() and parts[1].isdigit()):
-        raise errors.EdgeQLSyntaxError(
-            f"Unexpected {token.val!r}",
-            context=token.context)
-
-    # context for the AST is established manually here
-    return [
-        qlast.Ptr(
-            name=parts[0],
-            direction=s_pointers.PointerDirection.Outbound,
-            context=context,
-        ),
-        qlast.Ptr(
-            name=parts[1],
-            direction=s_pointers.PointerDirection.Outbound,
-            context=token.context,
-        )
-    ]
-
-
 class Path(Nonterm):
     @parsing.precedence(precedence.P_DOT)
     def reduce_Expr_PathStep(self, *kids):
         path = ensure_path(kids[0].val)
         path.steps.append(kids[1].val)
-        self.val = path
-
-    # special case of Path.0.1 etc.
-    @parsing.precedence(precedence.P_DOT)
-    def reduce_Expr_DOT_FCONST(self, *kids):
-        # this is a valid link-like syntax for accessing unnamed tuples
-        path = ensure_path(kids[0].val)
-        path.steps.extend(_float_to_path(kids[2], kids[1].context))
         self.val = path
 
 
@@ -202,14 +169,6 @@ class AtomicPath(Nonterm):
     def reduce_AtomicExpr_PathStep(self, *kids):
         path = ensure_path(kids[0].val)
         path.steps.append(kids[1].val)
-        self.val = path
-
-    # special case of Path.0.1 etc.
-    @parsing.precedence(precedence.P_DOT)
-    def reduce_AtomicExpr_DOT_FCONST(self, *kids):
-        # this is a valid link-like syntax for accessing unnamed tuples
-        path = ensure_path(kids[0].val)
-        path.steps.extend(_float_to_path(kids[2], kids[1].context))
         self.val = path
 
 
