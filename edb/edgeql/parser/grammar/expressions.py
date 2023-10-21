@@ -63,7 +63,7 @@ class SimpleFor(Nonterm):
         )
 
     # XXX! This breaks things!!!
-    def reduce_For2(self, *kids):
+    def reduce_ForTwo(self, *kids):
         r"%reduce FOR Identifier IN Expr ParenExpr"
         _, alias, _, iterator, result = kids
         self.val = qlast.ForQuery(
@@ -92,7 +92,7 @@ class ParenExpr(Nonterm):
         pass
 
 
-class BaseAtomicExpr(Nonterm):
+class Expr(Nonterm):
     @parsing.precedence(precedence.P_UMINUS)
     @parsing.inline(0)
     def reduce_ParenExpr(self, *kids):
@@ -107,12 +107,6 @@ class BaseAtomicExpr(Nonterm):
         self.val = qlast.Path(
             steps=[qlast.ObjectRef(name=kids[0].val.name,
                                    module=kids[0].val.module)])
-
-
-class Expr(Nonterm):
-    @parsing.inline(0)
-    def reduce_BaseAtomicExpr(self, *kids):
-        pass
 
 
 class FuncApplication(Nonterm):
