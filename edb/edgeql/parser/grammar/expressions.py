@@ -112,16 +112,8 @@ class BaseAtomicExpr(Nonterm):
         pass
 
     @parsing.inline(0)
-    def reduce_Tuple(self, *kids):
-        pass
-
-    @parsing.inline(0)
     def reduce_Set(self, *kids):
         pass
-
-    # @parsing.inline(0)
-    # def reduce_NamedTuple(self, *kids):
-    #     pass
 
     @parsing.precedence(precedence.P_DOT)
     def reduce_NodeName(self, *kids):
@@ -135,33 +127,6 @@ class BaseAtomicExpr(Nonterm):
 
 
 class Expr(Nonterm):
-    # BaseAtomicExpr
-    # Path | Expr { ... }
-
-    # | Expr '[' Expr ']'
-    # | Expr '[' Expr ':' Expr ']'
-    # | Expr '[' ':' Expr ']'
-    # | Expr '[' Expr ':' ']'
-    # | Expr '[' IS NodeName ']'
-
-    # | '+' Expr | '-' Expr | Expr '+' Expr | Expr '-' Expr
-    # | Expr '*' Expr | Expr '/' Expr | Expr '%' Expr
-    # | Expr '**' Expr | Expr '<' Expr | Expr '>' Expr
-    # | Expr '=' Expr
-    # | Expr AND Expr | Expr OR Expr | NOT Expr
-    # | Expr LIKE Expr | Expr NOT LIKE Expr
-    # | Expr ILIKE Expr | Expr NOT ILIKE Expr
-    # | Expr IS TypeExpr | Expr IS NOT TypeExpr
-    # | INTROSPECT TypeExpr
-    # | Expr IN Expr | Expr NOT IN Expr
-    # | '<' TypeName '>' Expr
-    # | Expr IF Expr ELSE Expr
-    # | Expr ?? Expr
-    # | Expr UNION Expr | Expr UNION Expr
-    # | DISTINCT Expr
-    # | DETACHED Expr
-    # | GLOBAL Name
-    # | EXISTS Expr
 
     @parsing.inline(0)
     def reduce_BaseAtomicExpr(self, *kids):
@@ -170,14 +135,6 @@ class Expr(Nonterm):
     @parsing.inline(0)
     def reduce_Path(self, *kids):
         pass
-
-
-class Tuple(Nonterm):
-    def reduce_LPAREN_Expr_COMMA_OptExprList_RPAREN(self, *kids):
-        self.val = qlast.Tuple(elements=[kids[1].val] + kids[3].val)
-
-    def reduce_LPAREN_RPAREN(self, *kids):
-        self.val = qlast.Tuple(elements=[])
 
 
 class Set(Nonterm):
@@ -489,18 +446,6 @@ class FuncCallArg(Nonterm):
     def reduce_FuncCallArgExpr(self, *kids):
         self.val = kids[0].val
 
-    # def reduce_FuncCallArgExpr_OptFilterClause_OptSortClause(self, *kids):
-    #     self.val = kids[0].val
-
-    #     if kids[1].val or kids[2].val:
-    #         qry = qlast.SelectQuery(
-    #             result=self.val[2],
-    #             where=kids[1].val,
-    #             orderby=kids[2].val,
-    #             implicit=True,
-    #         )
-    #         self.val = (self.val[0], self.val[1], qry)
-
 
 class FuncArgList(ListNonterm, element=FuncCallArg, separator=tokens.T_COMMA):
     pass
@@ -522,16 +467,6 @@ class OptFuncArgList(Nonterm):
 class PosCallArg(Nonterm):
     def reduce_Expr(self, *kids):
         self.val = kids[0].val
-
-    # def reduce_Expr_OptFilterClause_OptSortClause(self, *kids):
-    #     self.val = kids[0].val
-    #     if kids[1].val or kids[2].val:
-    #         self.val = qlast.SelectQuery(
-    #             result=self.val,
-    #             where=kids[1].val,
-    #             orderby=kids[2].val,
-    #             implicit=True,
-    #         )
 
 
 class PosCallArgList(ListNonterm, element=PosCallArg,
