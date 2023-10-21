@@ -111,15 +111,8 @@ class Expr(Nonterm):
 
 class FuncApplication(Nonterm):
     def reduce_NodeName_LPAREN_RPAREN(self, *kids):
-        module = kids[0].val.module
-        func_name = kids[0].val.name
-        name = func_name if not module else (module, func_name)
-
-        last_named_seen = None
-        args = []
-        kwargs = {}
-
-        self.val = qlast.FunctionCall(func=name, args=args, kwargs=kwargs)
+        name = kids[0].val.name
+        self.val = qlast.FunctionCall(func=name, args=[], kwargs={})
 
 
 class FuncExpr(Nonterm):
