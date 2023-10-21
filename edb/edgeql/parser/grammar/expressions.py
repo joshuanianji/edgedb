@@ -178,7 +178,7 @@ class PathStep(Nonterm):
 
 
 class FuncApplication(Nonterm):
-    def reduce_NodeName_LPAREN_OptFuncArgList_RPAREN(self, *kids):
+    def reduce_NodeName_LPAREN_RPAREN(self, *kids):
         module = kids[0].val.module
         func_name = kids[0].val.name
         name = func_name if not module else (module, func_name)
@@ -186,23 +186,6 @@ class FuncApplication(Nonterm):
         last_named_seen = None
         args = []
         kwargs = {}
-        for argname, argname_ctx, arg in kids[2].val:
-            if argname is not None:
-                if argname in kwargs:
-                    raise errors.EdgeQLSyntaxError(
-                        f"duplicate named argument `{argname}`",
-                        context=argname_ctx)
-
-                last_named_seen = argname
-                kwargs[argname] = arg
-
-            else:
-                if last_named_seen is not None:
-                    raise errors.EdgeQLSyntaxError(
-                        f"positional argument after named "
-                        f"argument `{last_named_seen}`",
-                        context=arg.context)
-                args.append(arg)
 
         self.val = qlast.FunctionCall(func=name, args=args, kwargs=kwargs)
 
@@ -211,37 +194,6 @@ class FuncExpr(Nonterm):
     @parsing.inline(0)
     def reduce_FuncApplication(self, *kids):
         pass
-
-
-class FuncCallArgExpr(Nonterm):
-    def reduce_Expr(self, *kids):
-        self.val = (
-            None,
-            None,
-            kids[0].val,
-        )
-
-
-class FuncCallArg(Nonterm):
-    def reduce_Expr(self, *kids):
-        self.val = kids[0].val
-
-
-class FuncArgList(ListNonterm, element=FuncCallArg, separator=tokens.T_COMMA):
-    pass
-
-
-class OptFuncArgList(Nonterm):
-    @parsing.inline(0)
-    def reduce_FuncArgList_COMMA(self, *kids):
-        pass
-
-    @parsing.inline(0)
-    def reduce_FuncArgList(self, *kids):
-        pass
-
-    def reduce_empty(self, *kids):
-        self.val = []
 
 
 class Identifier(Nonterm):
@@ -253,10 +205,6 @@ class Identifier(Nonterm):
 class BaseName(Nonterm):
     def reduce_Identifier(self, *kids):
         self.val = [kids[0].val]
-
-    # @parsing.inline(0)
-    # def reduce_QualifiedName(self, *kids):
-    #     pass
 
 
 class NodeName(Nonterm):
