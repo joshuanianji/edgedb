@@ -129,10 +129,6 @@ class Expr(Nonterm):
     def reduce_BaseAtomicExpr(self, *kids):
         pass
 
-    @parsing.inline(0)
-    def reduce_Path(self, *kids):
-        pass
-
 
 def ensure_path(expr):
     if not isinstance(expr, qlast.Path):
@@ -140,12 +136,6 @@ def ensure_path(expr):
     return expr
 
 
-class Path(Nonterm):
-    @parsing.precedence(precedence.P_DOT)
-    def reduce_Expr_PathStep(self, *kids):
-        path = ensure_path(kids[0].val)
-        path.steps.append(kids[1].val)
-        self.val = path
 
 
 class AtomicExpr(Nonterm):
@@ -168,7 +158,7 @@ class AtomicPath(Nonterm):
 
 
 class PathStep(Nonterm):
-    def reduce_DOT_PathNodeName(self, *kids):
+    def reduce_DOT_Identifier(self, *kids):
         from edb.schema import pointers as s_pointers
 
         self.val = qlast.Ptr(
@@ -216,18 +206,3 @@ class NodeName(Nonterm):
         self.val = qlast.ObjectRef(
             module='::'.join(base_name.val[:-1]) or None,
             name=base_name.val[-1])
-
-
-class PathNodeName(Nonterm):
-    # NOTE: A non-qualified name that can be an identifier or
-    # PARTIAL_RESERVED_KEYWORD.
-    #
-    # This name is used as part of paths after the DOT as well as in
-    # definitions after LINK/POINTER. It can be an identifier including
-    # PARTIAL_RESERVED_KEYWORD and does not need to be quoted or
-    # parenthesized.
-
-    def reduce_Identifier(self, *kids):
-        self.val = qlast.ObjectRef(
-            module=None,
-            name=kids[0].val)
