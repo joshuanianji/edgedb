@@ -182,16 +182,6 @@ class PathStep(Nonterm):
         )
 
 
-# Used in free shapes
-class FreeStepName(Nonterm):
-    @parsing.inline(0)
-    def reduce_ShortNodeName(self, *kids):
-        pass
-
-    def reduce_DUNDERTYPE(self, *kids):
-        self.val = qlast.ObjectRef(name=kids[0].val)
-
-
 # Used in shapes, paths and in PROPERTY/LINK definitions.
 class PathStepName(Nonterm):
     @parsing.inline(0)
