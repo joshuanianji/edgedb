@@ -109,16 +109,10 @@ class Expr(Nonterm):
                                    module=kids[0].val.module)])
 
 
-class FuncApplication(Nonterm):
+class FuncExpr(Nonterm):
     def reduce_NodeName_LPAREN_RPAREN(self, *kids):
         name = kids[0].val.name
         self.val = qlast.FunctionCall(func=name, args=[], kwargs={})
-
-
-class FuncExpr(Nonterm):
-    @parsing.inline(0)
-    def reduce_FuncApplication(self, *kids):
-        pass
 
 
 class Identifier(Nonterm):
