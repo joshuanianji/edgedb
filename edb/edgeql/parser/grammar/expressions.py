@@ -53,7 +53,7 @@ class ExprStmt(Nonterm):
 
 class SimpleFor(Nonterm):
     def reduce_For(self, *kids):
-        r"%reduce FOR Identifier IN AtomicExpr \
+        r"%reduce FOR Identifier IN Expr \
                   UNION Expr"
         _, alias, _, iterator, _, result = kids
         self.val = qlast.ForQuery(
@@ -64,7 +64,7 @@ class SimpleFor(Nonterm):
 
     # XXX! This breaks things!!!
     def reduce_For2(self, *kids):
-        r"%reduce FOR Identifier IN AtomicExpr ParenExpr"
+        r"%reduce FOR Identifier IN Expr ParenExpr"
         _, alias, _, iterator, result = kids
         self.val = qlast.ForQuery(
             iterator_alias=alias.val,
@@ -93,12 +93,6 @@ class ParenExpr(Nonterm):
 
 
 class BaseAtomicExpr(Nonterm):
-    # { ... } | Constant | '(' Expr ')' | FuncExpr
-    # | Tuple | NamedTuple | Collection | Set
-    # | '__source__' | '__subject__'
-    # | '__new__' | '__old__' | '__specified__'
-    # | NodeName | PathStep
-
     @parsing.precedence(precedence.P_UMINUS)
     @parsing.inline(0)
     def reduce_ParenExpr(self, *kids):
@@ -116,12 +110,6 @@ class BaseAtomicExpr(Nonterm):
 
 
 class Expr(Nonterm):
-    @parsing.inline(0)
-    def reduce_BaseAtomicExpr(self, *kids):
-        pass
-
-
-class AtomicExpr(Nonterm):
     @parsing.inline(0)
     def reduce_BaseAtomicExpr(self, *kids):
         pass
