@@ -41,10 +41,6 @@ class Nonterm(parsing.Nonterm):
     pass
 
 
-class ListNonterm(parsing.ListNonterm, element=None):
-    pass
-
-
 class ExprStmt(Nonterm):
     @parsing.inline(0)
     def reduce_SimpleFor(self, *kids):
