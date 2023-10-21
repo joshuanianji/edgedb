@@ -102,31 +102,6 @@ class BaseAtomicExpr(Nonterm):
     # | '__new__' | '__old__' | '__specified__'
     # | NodeName | PathStep
 
-    # @parsing.inline(0)
-    # def reduce_FreeShape(self, *kids):
-    #     pass
-
-    @parsing.inline(0)
-    def reduce_Constant(self, *kids):
-        pass
-
-    def reduce_DUNDERSOURCE(self, *kids):
-        self.val = qlast.Path(steps=[qlast.Source()])
-
-    def reduce_DUNDERSUBJECT(self, *kids):
-        self.val = qlast.Path(steps=[qlast.Subject()])
-
-    def reduce_DUNDERNEW(self, *kids):
-        self.val = qlast.Path(steps=[qlast.SpecialAnchor(name='__new__')])
-
-    def reduce_DUNDEROLD(self, *kids):
-        self.val = qlast.Path(steps=[qlast.SpecialAnchor(name='__old__')])
-
-    def reduce_DUNDERSPECIFIED(self, _):
-        self.val = qlast.Path(
-            steps=[qlast.SpecialAnchor(name='__specified__')]
-        )
-
     @parsing.precedence(precedence.P_UMINUS)
     @parsing.inline(0)
     def reduce_ParenExpr(self, *kids):
@@ -138,10 +113,6 @@ class BaseAtomicExpr(Nonterm):
 
     @parsing.inline(0)
     def reduce_Tuple(self, *kids):
-        pass
-
-    @parsing.inline(0)
-    def reduce_Collection(self, *kids):
         pass
 
     @parsing.inline(0)
@@ -161,13 +132,6 @@ class BaseAtomicExpr(Nonterm):
     @parsing.precedence(precedence.P_DOT)
     def reduce_PathStep(self, *kids):
         self.val = qlast.Path(steps=[kids[0].val], partial=True)
-
-    @parsing.precedence(precedence.P_DOT)
-    def reduce_DOT_FCONST(self, *kids):
-        # this is a valid link-like syntax for accessing unnamed tuples
-        self.val = qlast.Path(
-            steps=_float_to_path(kids[1], kids[0].context),
-            partial=True)
 
 
 class Expr(Nonterm):
@@ -240,12 +204,6 @@ class NamedTupleElementList(ListNonterm, element=NamedTupleElement,
 class Set(Nonterm):
     def reduce_LBRACE_OptExprList_RBRACE(self, *kids):
         self.val = qlast.Set(elements=kids[1].val)
-
-
-class Collection(Nonterm):
-    def reduce_LBRACKET_OptExprList_RBRACKET(self, *kids):
-        elements = kids[1].val
-        self.val = qlast.Array(elements=elements)
 
 
 class OptExprList(Nonterm):
