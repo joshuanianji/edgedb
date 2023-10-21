@@ -118,53 +118,17 @@ class BaseAtomicExpr(Nonterm):
             steps=[qlast.ObjectRef(name=kids[0].val.name,
                                    module=kids[0].val.module)])
 
-    @parsing.precedence(precedence.P_DOT)
-    def reduce_PathStep(self, *kids):
-        self.val = qlast.Path(steps=[kids[0].val], partial=True)
-
 
 class Expr(Nonterm):
-
     @parsing.inline(0)
     def reduce_BaseAtomicExpr(self, *kids):
         pass
-
-
-def ensure_path(expr):
-    if not isinstance(expr, qlast.Path):
-        expr = qlast.Path(steps=[expr])
-    return expr
-
-
 
 
 class AtomicExpr(Nonterm):
     @parsing.inline(0)
     def reduce_BaseAtomicExpr(self, *kids):
         pass
-
-    @parsing.inline(0)
-    def reduce_AtomicPath(self, *kids):
-        pass
-
-
-# Duplication of Path above, but with BasicExpr at the root
-class AtomicPath(Nonterm):
-    @parsing.precedence(precedence.P_DOT)
-    def reduce_AtomicExpr_PathStep(self, *kids):
-        path = ensure_path(kids[0].val)
-        path.steps.append(kids[1].val)
-        self.val = path
-
-
-class PathStep(Nonterm):
-    def reduce_DOT_Identifier(self, *kids):
-        from edb.schema import pointers as s_pointers
-
-        self.val = qlast.Ptr(
-            name=kids[1].val.name,
-            direction=s_pointers.PointerDirection.Outbound
-        )
 
 
 class FuncApplication(Nonterm):
@@ -198,10 +162,6 @@ class BaseName(Nonterm):
 
 
 class NodeName(Nonterm):
-    # NOTE: Generic short of fully-qualified name.
-    #
-    # This name is safe to be used anywhere as it starts with IDENT only.
-
     def reduce_BaseName(self, base_name):
         self.val = qlast.ObjectRef(
             module='::'.join(base_name.val[:-1]) or None,
