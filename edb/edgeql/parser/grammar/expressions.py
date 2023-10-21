@@ -112,10 +112,6 @@ class BaseAtomicExpr(Nonterm):
     def reduce_FuncExpr(self, *kids):
         pass
 
-    @parsing.inline(0)
-    def reduce_Set(self, *kids):
-        pass
-
     @parsing.precedence(precedence.P_DOT)
     def reduce_NodeName(self, *kids):
         self.val = qlast.Path(
@@ -136,24 +132,6 @@ class Expr(Nonterm):
     @parsing.inline(0)
     def reduce_Path(self, *kids):
         pass
-
-
-class Set(Nonterm):
-    def reduce_LBRACE_OptExprList_RBRACE(self, *kids):
-        self.val = qlast.Set(elements=kids[1].val)
-
-
-class OptExprList(Nonterm):
-    @parsing.inline(0)
-    def reduce_ExprList_COMMA(self, *kids):
-        pass
-
-    @parsing.inline(0)
-    def reduce_ExprList(self, *kids):
-        pass
-
-    def reduce_empty(self, *kids):
-        self.val = []
 
 
 class ExprList(ListNonterm, element=Expr, separator=tokens.T_COMMA):
