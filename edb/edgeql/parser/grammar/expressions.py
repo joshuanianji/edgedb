@@ -162,7 +162,6 @@ class AtomicExpr(Nonterm):
         pass
 
 
-
 # Duplication of Path above, but with BasicExpr at the root
 class AtomicPath(Nonterm):
     @parsing.precedence(precedence.P_DOT)
@@ -173,23 +172,13 @@ class AtomicPath(Nonterm):
 
 
 class PathStep(Nonterm):
-    def reduce_DOT_PathStepName(self, *kids):
+    def reduce_DOT_PathNodeName(self, *kids):
         from edb.schema import pointers as s_pointers
 
         self.val = qlast.Ptr(
             name=kids[1].val.name,
             direction=s_pointers.PointerDirection.Outbound
         )
-
-
-# Used in shapes, paths and in PROPERTY/LINK definitions.
-class PathStepName(Nonterm):
-    @parsing.inline(0)
-    def reduce_PathNodeName(self, *kids):
-        pass
-
-    def reduce_DUNDERTYPE(self, *kids):
-        self.val = qlast.ObjectRef(name=kids[0].val)
 
 
 class FuncApplication(Nonterm):
