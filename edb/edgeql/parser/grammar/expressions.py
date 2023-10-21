@@ -46,16 +46,6 @@ class ListNonterm(parsing.ListNonterm, element=None):
 
 
 class ExprStmt(Nonterm):
-    # def reduce_WithBlock_ExprStmtCore(self, *kids):
-    #     self.val = kids[1].val
-    #     self.val.aliases = kids[0].val.aliases
-
-    @parsing.inline(0)
-    def reduce_ExprStmtCore(self, *kids):
-        pass
-
-
-class ExprStmtCore(Nonterm):
     @parsing.inline(0)
     def reduce_SimpleFor(self, *kids):
         pass
@@ -63,22 +53,6 @@ class ExprStmtCore(Nonterm):
     @parsing.inline(0)
     def reduce_SimpleSelect(self, *kids):
         pass
-
-
-class AliasedExpr(Nonterm):
-    def reduce_Identifier_ASSIGN_Expr(self, *kids):
-        self.val = qlast.AliasedExpr(alias=kids[0].val, expr=kids[2].val)
-
-
-class AliasedExprList(ListNonterm, element=AliasedExpr,
-                      separator=tokens.T_COMMA):
-    pass
-
-
-# NOTE: This is intentionally not an AST node, since this structure never
-# makes it to the actual AST and exists solely for parser convenience.
-AliasedExprSpec = collections.namedtuple(
-    'AliasedExprSpec', ['alias', 'expr'], module=__name__)
 
 
 class SimpleFor(Nonterm):
@@ -109,51 +83,6 @@ class SimpleSelect(Nonterm):
         self.val = qlast.SelectQuery(
             result=kids[1].val,
         )
-
-
-        WithBlockData = collections.namedtuple(
-    'WithBlockData', ['aliases'], module=__name__)
-
-
-class WithBlock(Nonterm):
-    def reduce_WITH_WithDeclList(self, *kids):
-        aliases = []
-        for w in kids[1].val:
-            aliases.append(w)
-        self.val = WithBlockData(aliases=aliases)
-
-    def reduce_WITH_WithDeclList_COMMA(self, *kids):
-        aliases = []
-        for w in kids[1].val:
-            aliases.append(w)
-        self.val = WithBlockData(aliases=aliases)
-
-
-class AliasDecl(Nonterm):
-    def reduce_MODULE_ModuleName(self, *kids):
-        self.val = qlast.ModuleAliasDecl(
-            module='::'.join(kids[1].val))
-
-    def reduce_Identifier_AS_MODULE_ModuleName(self, *kids):
-        self.val = qlast.ModuleAliasDecl(
-            alias=kids[0].val,
-            module='::'.join(kids[3].val))
-
-    @parsing.inline(0)
-    def reduce_AliasedExpr(self, *kids):
-        pass
-
-
-class WithDecl(Nonterm):
-    @parsing.inline(0)
-    def reduce_AliasDecl(self, *kids):
-        pass
-
-
-class WithDeclList(ListNonterm, element=WithDecl,
-                   separator=tokens.T_COMMA):
-    pass
-
 
 
 class ParenExpr(Nonterm):
