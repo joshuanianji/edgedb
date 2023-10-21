@@ -120,14 +120,8 @@ class Identifier(Nonterm):
         self.val = ident.clean_value
 
 
-# this can appear anywhere
-class BaseName(Nonterm):
-    def reduce_Identifier(self, *kids):
-        self.val = [kids[0].val]
-
-
 class NodeName(Nonterm):
-    def reduce_BaseName(self, base_name):
+    def reduce_Identifier(self, base_name):
         self.val = qlast.ObjectRef(
-            module='::'.join(base_name.val[:-1]) or None,
-            name=base_name.val[-1])
+            module='::'.join(base_name.val) or None,
+            name=base_name.val)
