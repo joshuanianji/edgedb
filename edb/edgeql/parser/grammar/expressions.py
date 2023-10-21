@@ -300,35 +300,14 @@ class DotName(Nonterm):
         self.val = '.'.join(part for part in kids[0].val)
 
 
-class ModuleName(
-        ListNonterm, element=DotName, separator=tokens.T_DOUBLECOLON):
-    pass
-
-
-class ColonedIdents(
-        ListNonterm, element=Identifier, separator=tokens.T_DOUBLECOLON):
-    pass
-
-
-class QualifiedName(Nonterm):
-    def reduce_Identifier_DOUBLECOLON_ColonedIdents(self, ident, _, idents):
-        assert ident.val
-        assert idents.val
-        self.val = [ident.val, *idents.val]
-
-    def reduce_DUNDERSTD_DOUBLECOLON_ColonedIdents(self, _s, _c, idents):
-        assert idents.val
-        self.val = ['__std__', *idents.val]
-
-
 # this can appear anywhere
 class BaseName(Nonterm):
     def reduce_Identifier(self, *kids):
         self.val = [kids[0].val]
 
-    @parsing.inline(0)
-    def reduce_QualifiedName(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_QualifiedName(self, *kids):
+    #     pass
 
 
 # this can appear in link/property definitions
@@ -336,10 +315,6 @@ class PtrName(Nonterm):
     def reduce_Identifier(self, ptr_identifier):
         assert ptr_identifier.val
         self.val = [ptr_identifier.val]
-
-    @parsing.inline(0)
-    def reduce_QualifiedName(self, *_):
-        pass
 
 
 class NodeName(Nonterm):
@@ -366,34 +341,6 @@ class PtrNodeName(Nonterm):
         self.val = qlast.ObjectRef(
             module='::'.join(ptr_name.val[:-1]) or None,
             name=ptr_name.val[-1])
-
-
-class PtrQualifiedNodeName(Nonterm):
-    def reduce_QualifiedName(self, *kids):
-        self.val = qlast.ObjectRef(
-            module='::'.join(kids[0].val[:-1]),
-            name=kids[0].val[-1])
-
-
-class ShortNodeName(Nonterm):
-    # NOTE: A non-qualified name that can be an identifier or
-    # UNRESERVED_KEYWORD.
-    #
-    # This name is used as part of paths after the DOT. It can be an
-    # identifier including UNRESERVED_KEYWORD and does not need to be
-    # quoted or parenthesized.
-
-    def reduce_Identifier(self, *kids):
-        self.val = qlast.ObjectRef(
-            module=None,
-            name=kids[0].val)
-
-
-# ShortNodeNameList is needed in DDL, but it's worthwhile to define it
-# here, near ShortNodeName.
-class ShortNodeNameList(ListNonterm, element=ShortNodeName,
-                        separator=tokens.T_COMMA):
-    pass
 
 
 class PathNodeName(Nonterm):
@@ -427,28 +374,3 @@ class AnyNodeName(Nonterm):
         self.val = qlast.ObjectRef(
             module=None,
             name=kids[0].val)
-
-
-class KeywordMeta(parsing.NontermMeta):
-    def __new__(mcls, name, bases, dct, *, type):
-        result = super().__new__(mcls, name, bases, dct)
-
-        assert type in keywords.keyword_types
-
-        for token in keywords.by_type[type].values():
-            def method(inst, *kids):
-                inst.val = kids[0].val
-            method = context.has_context(method)
-            method.__doc__ = "%%reduce %s" % token
-            method.__name__ = 'reduce_%s' % token
-            setattr(result, method.__name__, method)
-
-        return result
-
-    def __init__(cls, name, bases, dct, *, type):
-        super().__init__(name, bases, dct)
-
-
-class ReservedKeyword(Nonterm, metaclass=KeywordMeta,
-                      type=keywords.RESERVED_KEYWORD):
-    pass
