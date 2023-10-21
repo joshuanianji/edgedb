@@ -160,67 +160,6 @@ class ExprList(ListNonterm, element=Expr, separator=tokens.T_COMMA):
     pass
 
 
-class Constant(Nonterm):
-    # ARGUMENT
-    # | BaseNumberConstant
-    # | BaseStringConstant
-    # | BaseBooleanConstant
-    # | BaseBytesConstant
-
-    def reduce_ARGUMENT(self, *kids):
-        self.val = qlast.Parameter(name=kids[0].val[1:])
-
-    @parsing.inline(0)
-    def reduce_BaseNumberConstant(self, *kids):
-        pass
-
-    @parsing.inline(0)
-    def reduce_BaseStringConstant(self, *kids):
-        pass
-
-    @parsing.inline(0)
-    def reduce_BaseBooleanConstant(self, *kids):
-        pass
-
-    @parsing.inline(0)
-    def reduce_BaseBytesConstant(self, *kids):
-        pass
-
-
-class BaseNumberConstant(Nonterm):
-    def reduce_ICONST(self, *kids):
-        self.val = qlast.IntegerConstant(value=kids[0].val)
-
-    def reduce_FCONST(self, *kids):
-        self.val = qlast.FloatConstant(value=kids[0].val)
-
-    def reduce_NICONST(self, *kids):
-        self.val = qlast.BigintConstant(value=kids[0].val)
-
-    def reduce_NFCONST(self, *kids):
-        self.val = qlast.DecimalConstant(value=kids[0].val)
-
-
-class BaseStringConstant(Nonterm):
-
-    def reduce_SCONST(self, token):
-        self.val = qlast.StringConstant(value=token.clean_value)
-
-
-class BaseBytesConstant(Nonterm):
-
-    def reduce_BCONST(self, bytes_tok):
-        self.val = qlast.BytesConstant(value=bytes_tok.clean_value)
-
-
-class BaseBooleanConstant(Nonterm):
-    def reduce_TRUE(self, *kids):
-        self.val = qlast.BooleanConstant(value='true')
-
-    def reduce_FALSE(self, *kids):
-        self.val = qlast.BooleanConstant(value='false')
-
-
 def ensure_path(expr):
     if not isinstance(expr, qlast.Path):
         expr = qlast.Path(steps=[expr])
@@ -735,17 +674,6 @@ class Subtype(Nonterm):
     def reduce_Identifier_COLON_FullTypeExpr(self, *kids):
         self.val = kids[2].val
         self.val.name = kids[0].val
-
-    def reduce_BaseStringConstant(self, *kids):
-        # TODO: Raise a DeprecationWarning once we have facility for that.
-        self.val = qlast.TypeExprLiteral(
-            val=kids[0].val,
-        )
-
-    def reduce_BaseNumberConstant(self, *kids):
-        self.val = qlast.TypeExprLiteral(
-            val=kids[0].val,
-        )
 
 
 class SubtypeList(ListNonterm, element=Subtype, separator=tokens.T_COMMA):
