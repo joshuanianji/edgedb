@@ -51,18 +51,6 @@ class ConfigOp(Nonterm):
             expr=expr.val,
         )
 
-    def reduce_INSERT_NodeName_Shape(self, _, name, shape):
-        self.val = qlast.ConfigInsert(
-            name=name.val,
-            shape=shape.val,
-        )
-
-    def reduce_RESET_NodeName_OptFilterClause(self, _, name, where):
-        self.val = qlast.ConfigReset(
-            name=name.val,
-            where=where.val,
-        )
-
 
 class ConfigStmt(Nonterm):
 
