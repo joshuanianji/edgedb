@@ -42,5 +42,19 @@ class EdgeQLSyntaxTest(tb.BaseSyntaxTest):
 class TestEdgeQLParser(EdgeQLSyntaxTest):
     def test_edgeql_syntax_simple_call_01(self):
         """
-        SELECT get_nested_obj()
+        get_nested_obj()
+        """
+
+    def test_edgeql_syntax_simple_for_02(self):
+        """
+        for x in x union x
+        """
+
+    def test_edgeql_syntax_simple_for_02(self):
+        """
+        for x in x (x)
+
+% OK %
+
+        for x in x union x
         """

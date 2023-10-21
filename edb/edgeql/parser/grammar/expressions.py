@@ -47,14 +47,13 @@ class ExprStmt(Nonterm):
         pass
 
     @parsing.inline(0)
-    def reduce_SimpleSelect(self, *kids):
+    def reduce_Expr(self, *kids):
         pass
 
 
 class SimpleFor(Nonterm):
     def reduce_For(self, *kids):
-        r"%reduce FOR Identifier IN Expr \
-                  UNION Expr"
+        r"%reduce FOR Identifier IN Expr UNION Expr"
         _, alias, _, iterator, _, result = kids
         self.val = qlast.ForQuery(
             iterator_alias=alias.val,
@@ -62,10 +61,10 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
-    # XXX! This breaks things!!!
-    def reduce_ForTwo(self, *kids):
-        r"%reduce FOR Identifier IN Expr ParenExpr"
-        _, alias, _, iterator, result = kids
+    # XXX! This breaks things!!! If this is present, the SELECT thing breaks!!
+    def reduce_For2(self, *kids):
+        r"%reduce FOR Identifier IN Expr LPAREN Expr RPAREN"
+        _, alias, _, iterator, _, result, _ = kids
         self.val = qlast.ForQuery(
             iterator_alias=alias.val,
             iterator=iterator.val,
@@ -73,35 +72,12 @@ class SimpleFor(Nonterm):
         )
 
 
-class SimpleSelect(Nonterm):
-    def reduce_Select(self, *kids):
-        r"%reduce SELECT Expr"
-
-        self.val = qlast.SelectQuery(
-            result=kids[1].val,
-        )
-
-
-class ParenExpr(Nonterm):
-    @parsing.inline(1)
-    def reduce_LPAREN_Expr_RPAREN(self, *kids):
-        pass
-
-    @parsing.inline(1)
-    def reduce_LPAREN_ExprStmt_RPAREN(self, *kids):
-        pass
-
-
 class Expr(Nonterm):
-    @parsing.precedence(precedence.P_UMINUS)
-    @parsing.inline(0)
-    def reduce_ParenExpr(self, *kids):
-        pass
-
     @parsing.inline(0)
     def reduce_FuncExpr(self, *kids):
         pass
 
+    # XXX: DROPPING THIS FIXES IT
     @parsing.precedence(precedence.P_DOT)
     def reduce_NodeName(self, *kids):
         self.val = qlast.Path(
@@ -120,8 +96,7 @@ class Identifier(Nonterm):
         self.val = ident.clean_value
 
 
+# COULD MERGE THIS INTO IDENTIFIER
 class NodeName(Nonterm):
     def reduce_Identifier(self, base_name):
-        self.val = qlast.ObjectRef(
-            module='::'.join(base_name.val) or None,
-            name=base_name.val)
+        self.val = qlast.ObjectRef(name=base_name.val)
