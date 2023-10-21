@@ -328,69 +328,6 @@ class Expr(Nonterm):
             cardinality_mod=qlast.CardinalityModifier.Required,
         )
 
-    def reduce_Expr_IF_Expr_ELSE_Expr(self, *kids):
-        if_expr, _, condition, _, else_expr = kids
-        self.val = qlast.IfElse(
-            if_expr=if_expr.val,
-            condition=condition.val,
-            else_expr=else_expr.val,
-            python_style=True,
-        )
-
-    def reduce_IF_Expr_THEN_Expr_ELSE_Expr(self, *kids):
-        _, condition, _, if_expr, _, else_expr = kids
-        self.val = qlast.IfElse(
-            condition=condition.val,
-            if_expr=if_expr.val,
-            else_expr=else_expr.val,
-        )
-
-    def reduce_Expr_UNION_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='UNION',
-                               right=kids[2].val)
-
-    def reduce_Expr_EXCEPT_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='EXCEPT',
-                               right=kids[2].val)
-
-    def reduce_Expr_INTERSECT_Expr(self, *kids):
-        self.val = qlast.BinOp(left=kids[0].val, op='INTERSECT',
-                               right=kids[2].val)
-
-
-class CompareOp(Nonterm):
-    @parsing.inline(0)
-    def reduce_DISTINCTFROM(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_GREATEREQ(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_LESSEQ(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_NOTDISTINCTFROM(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_NOTEQ(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_LANGBRACKET(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_RANGBRACKET(self, *_):
-        pass
-
-    @parsing.inline(0)
-    def reduce_EQUALS(self, *_):
-        pass
-
 
 class Tuple(Nonterm):
     def reduce_LPAREN_Expr_COMMA_OptExprList_RPAREN(self, *kids):
