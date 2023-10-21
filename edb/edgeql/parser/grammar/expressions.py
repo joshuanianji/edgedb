@@ -156,20 +156,6 @@ class WithDeclList(ListNonterm, element=WithDecl,
 
 
 
-class IndirectionEl(Nonterm):
-    def reduce_LBRACKET_Expr_RBRACKET(self, *kids):
-        self.val = qlast.Index(index=kids[1].val)
-
-    def reduce_LBRACKET_Expr_COLON_Expr_RBRACKET(self, *kids):
-        self.val = qlast.Slice(start=kids[1].val, stop=kids[3].val)
-
-    def reduce_LBRACKET_Expr_COLON_RBRACKET(self, *kids):
-        self.val = qlast.Slice(start=kids[1].val, stop=None)
-
-    def reduce_LBRACKET_COLON_Expr_RBRACKET(self, *kids):
-        self.val = qlast.Slice(start=None, stop=kids[2].val)
-
-
 class ParenExpr(Nonterm):
     @parsing.inline(1)
     def reduce_LPAREN_Expr_RPAREN(self, *kids):
@@ -291,42 +277,6 @@ class Expr(Nonterm):
     @parsing.inline(0)
     def reduce_Path(self, *kids):
         pass
-
-    def reduce_Expr_IndirectionEl(self, *kids):
-        expr = kids[0].val
-        if isinstance(expr, qlast.Indirection):
-            self.val = expr
-            expr.indirection.append(kids[1].val)
-        else:
-            self.val = qlast.Indirection(arg=expr,
-                                         indirection=[kids[1].val])
-
-    @parsing.precedence(precedence.P_TYPECAST)
-    def reduce_LANGBRACKET_FullTypeExpr_RANGBRACKET_Expr(
-            self, *kids):
-        self.val = qlast.TypeCast(
-            expr=kids[3].val,
-            type=kids[1].val,
-            cardinality_mod=None,
-        )
-
-    @parsing.precedence(precedence.P_TYPECAST)
-    def reduce_LANGBRACKET_OPTIONAL_FullTypeExpr_RANGBRACKET_Expr(
-            self, *kids):
-        self.val = qlast.TypeCast(
-            expr=kids[4].val,
-            type=kids[2].val,
-            cardinality_mod=qlast.CardinalityModifier.Optional,
-        )
-
-    @parsing.precedence(precedence.P_TYPECAST)
-    def reduce_LANGBRACKET_REQUIRED_FullTypeExpr_RANGBRACKET_Expr(
-            self, *kids):
-        self.val = qlast.TypeCast(
-            expr=kids[4].val,
-            type=kids[2].val,
-            cardinality_mod=qlast.CardinalityModifier.Required,
-        )
 
 
 class Tuple(Nonterm):
