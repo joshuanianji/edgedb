@@ -119,9 +119,9 @@ class BaseAtomicExpr(Nonterm):
     def reduce_Set(self, *kids):
         pass
 
-    @parsing.inline(0)
-    def reduce_NamedTuple(self, *kids):
-        pass
+    # @parsing.inline(0)
+    # def reduce_NamedTuple(self, *kids):
+    #     pass
 
     @parsing.precedence(precedence.P_DOT)
     def reduce_NodeName(self, *kids):
@@ -178,27 +178,6 @@ class Tuple(Nonterm):
 
     def reduce_LPAREN_RPAREN(self, *kids):
         self.val = qlast.Tuple(elements=[])
-
-
-class NamedTuple(Nonterm):
-    def reduce_LPAREN_NamedTupleElementList_RPAREN(self, *kids):
-        self.val = qlast.NamedTuple(elements=kids[1].val)
-
-    def reduce_LPAREN_NamedTupleElementList_COMMA_RPAREN(self, *kids):
-        self.val = qlast.NamedTuple(elements=kids[1].val)
-
-
-class NamedTupleElement(Nonterm):
-    def reduce_ShortNodeName_ASSIGN_Expr(self, *kids):
-        self.val = qlast.TupleElement(
-            name=qlast.Ptr(name=kids[0].val.name, context=kids[0].val.context),
-            val=kids[2].val
-        )
-
-
-class NamedTupleElementList(ListNonterm, element=NamedTupleElement,
-                            separator=tokens.T_COMMA):
-    pass
 
 
 class Set(Nonterm):
