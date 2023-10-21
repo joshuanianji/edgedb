@@ -221,27 +221,9 @@ class FuncCallArgExpr(Nonterm):
             kids[0].val,
         )
 
-    def reduce_Identifier_ASSIGN_Expr(self, *kids):
-        self.val = (
-            kids[0].val,
-            kids[0].context,
-            kids[2].val,
-        )
-
-    def reduce_ARGUMENT_ASSIGN_Expr(self, *kids):
-        if kids[0].val[1].isdigit():
-            raise errors.EdgeQLSyntaxError(
-                f"numeric named arguments are not supported",
-                context=kids[0].context)
-        else:
-            raise errors.EdgeQLSyntaxError(
-                f"named arguments do not need a '$' prefix, "
-                f"rewrite as '{kids[0].val[1:]} := ...'",
-                context=kids[0].context)
-
 
 class FuncCallArg(Nonterm):
-    def reduce_FuncCallArgExpr(self, *kids):
+    def reduce_Expr(self, *kids):
         self.val = kids[0].val
 
 
