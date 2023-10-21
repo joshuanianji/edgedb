@@ -23,13 +23,10 @@ from edb.common import parsing
 from edb.edgeql import ast as qlast
 
 from . import commondl
-from .expressions import Nonterm
+from .expressions import *
 from .precedence import *  # NOQA
 from .tokens import *  # NOQA
 from .statements import *  # NOQA
-from .ddl import *  # NOQA
-from .session import *  # NOQA
-from .config import *  # NOQA
 
 
 # The main EdgeQL grammar, all of whose productions should start with a
@@ -69,6 +66,26 @@ class EdgeQLGrammar(Nonterm):
     #     pass
 
 
+class Semicolons(Nonterm):
+    # one or more semicolons
+    @parsing.inline(0)
+    def reduce_SEMICOLON(self, tok):
+        pass
+
+    @parsing.inline(0)
+    def reduce_Semicolons_SEMICOLON(self, semicolons, semicolon):
+        pass
+
+
+class OptSemicolons(Nonterm):
+    @parsing.inline(0)
+    def reduce_Semicolons(self, semicolons):
+        pass
+
+    def reduce_empty(self):
+        self.val = None
+
+
 class EdgeQLBlock(Nonterm):
     @parsing.inline(0)
     def reduce_StatementBlock_OptSemicolons(self, _, _semicolon):
@@ -80,59 +97,12 @@ class EdgeQLBlock(Nonterm):
 
 class SingleStatement(Nonterm):
     @parsing.inline(0)
-    def reduce_Stmt(self, _):
+    def reduce_ExprStmt(self, _):
         # Expressions
         pass
 
-    # @parsing.inline(0)
-    # def reduce_DDLStmt(self, _):
-    #     # Data definition commands
-    #     pass
-
-    # @parsing.inline(0)
-    # def reduce_SessionStmt(self, _):
-    #     # Session-local utility commands
-    #     pass
-
-    # @parsing.inline(0)
-    # def reduce_ConfigStmt(self, _):
-    #     # Configuration commands
-    #     pass
-
 
 class StatementBlock(
-    parsing.ListNonterm, element=SingleStatement, separator=commondl.Semicolons
+    parsing.ListNonterm, element=SingleStatement, separator=Semicolons
 ):  # NOQA, Semicolons are from .ddl
     pass
-
-
-class SDLDocument(Nonterm):
-    def reduce_OptSemicolons_EOF(self, *kids):
-        self.val = qlast.Schema(declarations=[])
-
-    def reduce_statement_without_semicolons(self, *kids):
-        r"""%reduce \
-            OptSemicolons SDLShortStatement EOF
-        """
-        declarations = [kids[1].val]
-        commondl._validate_declarations(declarations)
-        self.val = qlast.Schema(declarations=declarations)
-
-    def reduce_statements_without_optional_trailing_semicolons(self, *kids):
-        r"""%reduce \
-            OptSemicolons SDLStatements \
-            OptSemicolons SDLShortStatement EOF
-        """
-        declarations = kids[1].val + [kids[3].val]
-        commondl._validate_declarations(declarations)
-        self.val = qlast.Schema(declarations=declarations)
-
-    def reduce_OptSemicolons_SDLStatements_EOF(self, *kids):
-        declarations = kids[1].val
-        commondl._validate_declarations(declarations)
-        self.val = qlast.Schema(declarations=declarations)
-
-    def reduce_OptSemicolons_SDLStatements_Semicolons_EOF(self, *kids):
-        declarations = kids[1].val
-        commondl._validate_declarations(declarations)
-        self.val = qlast.Schema(declarations=declarations)

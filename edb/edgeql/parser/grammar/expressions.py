@@ -170,17 +170,6 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
-    # def reduce_ForOpt(self, *kids):
-    #     r"%reduce FOR OPTIONAL Identifier IN AtomicExpr \
-    #               UNION Expr"
-    #     _, _, alias, _, iterator, _, result = kids
-    #     self.val = qlast.ForQuery(
-    #         optional=True,
-    #         iterator_alias=alias.val,
-    #         iterator=iterator.val,
-    #         result=result.val,
-    #     )
-
     def reduce_For2(self, *kids):
         r"%reduce FOR Identifier IN AtomicExpr ParenExpr"
         _, alias, _, iterator, result = kids
@@ -190,24 +179,6 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
-    # def reduce_For2(self, *kids):
-    #     r"%reduce FOR Identifier IN AtomicExpr Set"
-    #     _, alias, _, iterator, result = kids
-    #     self.val = qlast.ForQuery(
-    #         iterator_alias=alias.val,
-    #         iterator=iterator.val,
-    #         result=result.val,
-    #     )
-
-    # def reduce_ForOpt2(self, *kids):
-    #     r"%reduce FOR OPTIONAL Identifier IN AtomicExpr Set"
-    #     _, _, alias, _, iterator, result = kids
-    #     self.val = qlast.ForQuery(
-    #         optional=True,
-    #         iterator_alias=alias.val,
-    #         iterator=iterator.val,
-    #         result=result.val,
-    #     )
 
 
 class SimpleSelect(Nonterm):
