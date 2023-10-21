@@ -64,39 +64,10 @@ class ExprStmtCore(Nonterm):
     def reduce_SimpleSelect(self, *kids):
         pass
 
-    # @parsing.inline(0)
-    # def reduce_SimpleGroup(self, *kids):
-    #     pass
-
-    # @parsing.inline(0)
-    # def reduce_InternalGroup(self, *kids):
-    #     pass
-
-    # @parsing.inline(0)
-    # def reduce_SimpleInsert(self, *kids):
-    #     pass
-
-    # @parsing.inline(0)
-    # def reduce_SimpleUpdate(self, *kids):
-    #     pass
-
-    # @parsing.inline(0)
-    # def reduce_SimpleDelete(self, *kids):
-    #     pass
-
 
 class AliasedExpr(Nonterm):
     def reduce_Identifier_ASSIGN_Expr(self, *kids):
         self.val = qlast.AliasedExpr(alias=kids[0].val, expr=kids[2].val)
-
-
-class OptionallyAliasedExpr(Nonterm):
-    def reduce_AliasedExpr(self, *kids):
-        val = kids[0].val
-        self.val = AliasedExprSpec(alias=val.alias, expr=val.expr)
-
-    def reduce_Expr(self, *kids):
-        self.val = AliasedExprSpec(alias=None, expr=kids[0].val)
 
 
 class AliasedExprList(ListNonterm, element=AliasedExpr,
@@ -108,55 +79,6 @@ class AliasedExprList(ListNonterm, element=AliasedExpr,
 # makes it to the actual AST and exists solely for parser convenience.
 AliasedExprSpec = collections.namedtuple(
     'AliasedExprSpec', ['alias', 'expr'], module=__name__)
-
-
-class GroupingIdent(Nonterm):
-    def reduce_Identifier(self, *kids):
-        self.val = qlast.ObjectRef(name=kids[0].val)
-
-    def reduce_DOT_Identifier(self, *kids):
-        self.val = qlast.Path(
-            partial=True,
-            steps=[qlast.Ptr(name=kids[1].val)],
-        )
-
-
-class GroupingIdentList(ListNonterm, element=GroupingIdent,
-                        separator=tokens.T_COMMA):
-    pass
-
-
-class GroupingAtom(Nonterm):
-    @parsing.inline(0)
-    def reduce_GroupingIdent(self, *kids):
-        pass
-
-    def reduce_LPAREN_GroupingIdentList_RPAREN(self, *kids):
-        self.val = qlast.GroupingIdentList(elements=kids[1].val)
-
-
-class GroupingAtomList(ListNonterm, element=GroupingAtom,
-                       separator=tokens.T_COMMA):
-    pass
-
-
-class GroupingElement(Nonterm):
-    def reduce_GroupingAtom(self, *kids):
-        self.val = qlast.GroupingSimple(element=kids[0].val)
-
-    def reduce_LBRACE_GroupingElementList_RBRACE(self, *kids):
-        self.val = qlast.GroupingSets(sets=kids[1].val)
-
-    def reduce_ROLLUP_LPAREN_GroupingAtomList_RPAREN(self, *kids):
-        self.val = qlast.GroupingOperation(oper='rollup', elements=kids[2].val)
-
-    def reduce_CUBE_LPAREN_GroupingAtomList_RPAREN(self, *kids):
-        self.val = qlast.GroupingOperation(oper='cube', elements=kids[2].val)
-
-
-class GroupingElementList(
-        ListNonterm, element=GroupingElement, separator=tokens.T_COMMA):
-    pass
 
 
 class SimpleFor(Nonterm):
@@ -180,7 +102,6 @@ class SimpleFor(Nonterm):
         )
 
 
-
 class SimpleSelect(Nonterm):
     def reduce_Select(self, *kids):
         r"%reduce SELECT Expr"
@@ -189,61 +110,8 @@ class SimpleSelect(Nonterm):
             result=kids[1].val,
         )
 
-    # def reduce_Select(self, *kids):
-    #     r"%reduce SELECT OptionallyAliasedExpr \
-    #               OptFilterClause OptSortClause OptSelectLimit"
 
-    #     offset, limit = kids[4].val
-
-    #     if offset is not None or limit is not None:
-    #         subj = qlast.SelectQuery(
-    #             result=kids[1].val.expr,
-    #             result_alias=kids[1].val.alias,
-    #             where=kids[2].val,
-    #             orderby=kids[3].val,
-    #             implicit=True,
-    #         )
-
-    #         self.val = qlast.SelectQuery(
-    #             result=subj,
-    #             offset=offset,
-    #             limit=limit,
-    #         )
-    #     else:
-    #         self.val = qlast.SelectQuery(
-    #             result=kids[1].val.expr,
-    #             result_alias=kids[1].val.alias,
-    #             where=kids[2].val,
-    #             orderby=kids[3].val,
-    #         )
-
-
-class ByClause(Nonterm):
-    @parsing.inline(1)
-    def reduce_BY_GroupingElementList(self, *kids):
-        pass
-
-
-class UsingClause(Nonterm):
-    @parsing.inline(1)
-    def reduce_USING_AliasedExprList(self, *kids):
-        pass
-
-    @parsing.inline(1)
-    def reduce_USING_AliasedExprList_COMMA(self, *kids):
-        pass
-
-
-class OptUsingClause(Nonterm):
-    @parsing.inline(0)
-    def reduce_UsingClause(self, *kids):
-        pass
-
-    def reduce_empty(self, *kids):
-        self.val = None
-
-
-WithBlockData = collections.namedtuple(
+        WithBlockData = collections.namedtuple(
     'WithBlockData', ['aliases'], module=__name__)
 
 
@@ -285,47 +153,6 @@ class WithDecl(Nonterm):
 class WithDeclList(ListNonterm, element=WithDecl,
                    separator=tokens.T_COMMA):
     pass
-
-
-
-class PtrQuals(Nonterm):
-    def reduce_OPTIONAL(self, *kids):
-        self.val = PtrQualsSpec(required=False)
-
-    def reduce_REQUIRED(self, *kids):
-        self.val = PtrQualsSpec(required=True)
-
-    def reduce_SINGLE(self, *kids):
-        self.val = PtrQualsSpec(cardinality=qltypes.SchemaCardinality.One)
-
-    def reduce_MULTI(self, *kids):
-        self.val = PtrQualsSpec(cardinality=qltypes.SchemaCardinality.Many)
-
-    def reduce_OPTIONAL_SINGLE(self, *kids):
-        self.val = PtrQualsSpec(
-            required=False, cardinality=qltypes.SchemaCardinality.One)
-
-    def reduce_OPTIONAL_MULTI(self, *kids):
-        self.val = PtrQualsSpec(
-            required=False, cardinality=qltypes.SchemaCardinality.Many)
-
-    def reduce_REQUIRED_SINGLE(self, *kids):
-        self.val = PtrQualsSpec(
-            required=True, cardinality=qltypes.SchemaCardinality.One)
-
-    def reduce_REQUIRED_MULTI(self, *kids):
-        self.val = PtrQualsSpec(
-            required=True, cardinality=qltypes.SchemaCardinality.Many)
-
-
-class OptPtrQuals(Nonterm):
-
-    def reduce_empty(self, *kids):
-        self.val = PtrQualsSpec()
-
-    @parsing.inline(0)
-    def reduce_PtrQuals(self, *kids):
-        pass
 
 
 
@@ -465,21 +292,6 @@ class Expr(Nonterm):
     def reduce_Path(self, *kids):
         pass
 
-    # def reduce_Expr_Shape(self, *kids):
-    #     self.val = qlast.Shape(expr=kids[0].val, elements=kids[1].val)
-
-    # def reduce_EXISTS_Expr(self, *kids):
-    #     self.val = qlast.UnaryOp(op='EXISTS', operand=kids[1].val)
-
-    # def reduce_DISTINCT_Expr(self, *kids):
-    #     self.val = qlast.UnaryOp(op='DISTINCT', operand=kids[1].val)
-
-    # def reduce_DETACHED_Expr(self, *kids):
-    #     self.val = qlast.DetachedExpr(expr=kids[1].val)
-
-    # def reduce_GLOBAL_NodeName(self, *kids):
-    #     self.val = qlast.GlobalExpr(name=kids[1].val)
-
     def reduce_Expr_IndirectionEl(self, *kids):
         expr = kids[0].val
         if isinstance(expr, qlast.Indirection):
@@ -488,113 +300,6 @@ class Expr(Nonterm):
         else:
             self.val = qlast.Indirection(arg=expr,
                                          indirection=[kids[1].val])
-
-    # @parsing.precedence(precedence.P_UMINUS)
-    # def reduce_PLUS_Expr(self, *kids):
-    #     self.val = qlast.UnaryOp(op=kids[0].val, operand=kids[1].val)
-
-    # @parsing.precedence(precedence.P_UMINUS)
-    # def reduce_MINUS_Expr(self, *kids):
-    #     arg = kids[1].val
-    #     if isinstance(arg, qlast.BaseRealConstant):
-    #         # Special case for -<real_const> so that type inference based
-    #         # on literal size works correctly in the case of INT_MIN and
-    #         # friends.
-    #         self.val = type(arg)(value=arg.value, is_negative=True)
-    #     else:
-    #         self.val = qlast.UnaryOp(op=kids[0].val, operand=arg)
-
-    # def reduce_Expr_PLUS_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_DOUBLEPLUS_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_MINUS_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_STAR_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_SLASH_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_DOUBLESLASH_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_PERCENT_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_CIRCUMFLEX_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # @parsing.precedence(precedence.P_DOUBLEQMARK_OP)
-    # def reduce_Expr_DOUBLEQMARK_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # @parsing.precedence(precedence.P_COMPARE_OP)
-    # def reduce_Expr_CompareOp_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val,
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_AND_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val.upper(),
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_OR_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op=kids[1].val.upper(),
-    #                            right=kids[2].val)
-
-    # def reduce_NOT_Expr(self, *kids):
-    #     self.val = qlast.UnaryOp(op=kids[0].val.upper(), operand=kids[1].val)
-
-    # def reduce_Expr_LIKE_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op='LIKE',
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_NOT_LIKE_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op='NOT LIKE',
-    #                            right=kids[3].val)
-
-    # def reduce_Expr_ILIKE_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op='ILIKE',
-    #                            right=kids[2].val)
-
-    # def reduce_Expr_NOT_ILIKE_Expr(self, *kids):
-    #     self.val = qlast.BinOp(left=kids[0].val, op='NOT ILIKE',
-    #                            right=kids[3].val)
-
-    # def reduce_Expr_IS_TypeExpr(self, *kids):
-    #     self.val = qlast.IsOp(left=kids[0].val, op='IS',
-    #                           right=kids[2].val)
-
-    # @parsing.precedence(precedence.P_IS)
-    # def reduce_Expr_IS_NOT_TypeExpr(self, *kids):
-    #     self.val = qlast.IsOp(left=kids[0].val, op='IS NOT',
-    #                           right=kids[3].val)
-
-    # def reduce_INTROSPECT_TypeExpr(self, *kids):
-    #     self.val = qlast.Introspect(type=kids[1].val)
-
-    # def reduce_Expr_IN_Expr(self, *kids):
-    #     inexpr = kids[2].val
-    #     self.val = qlast.BinOp(left=kids[0].val, op='IN',
-    #                            right=inexpr)
-
-    # @parsing.precedence(precedence.P_IN)
-    # def reduce_Expr_NOT_IN_Expr(self, *kids):
-    #     inexpr = kids[3].val
-    #     self.val = qlast.BinOp(left=kids[0].val, op='NOT IN',
-    #                            right=inexpr)
 
     @parsing.precedence(precedence.P_TYPECAST)
     def reduce_LANGBRACKET_FullTypeExpr_RANGBRACKET_Expr(
@@ -1478,63 +1183,3 @@ class PartialReservedKeyword(Nonterm, metaclass=KeywordMeta,
 class ReservedKeyword(Nonterm, metaclass=KeywordMeta,
                       type=keywords.RESERVED_KEYWORD):
     pass
-
-
-class SchemaObjectClassValue(typing.NamedTuple):
-
-    itemclass: qltypes.SchemaObjectClass
-
-
-class SchemaObjectClass(Nonterm):
-
-    def reduce_ALIAS(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.ALIAS)
-
-    def reduce_ANNOTATION(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.ANNOTATION)
-
-    def reduce_CAST(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.CAST)
-
-    def reduce_CONSTRAINT(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.CONSTRAINT)
-
-    def reduce_FUNCTION(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.FUNCTION)
-
-    def reduce_LINK(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.LINK)
-
-    def reduce_MODULE(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.MODULE)
-
-    def reduce_OPERATOR(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.OPERATOR)
-
-    def reduce_PROPERTY(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.PROPERTY)
-
-    def reduce_SCALAR_TYPE(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.SCALAR_TYPE)
-
-    def reduce_TYPE(self, *kids):
-        self.val = SchemaObjectClassValue(
-            itemclass=qltypes.SchemaObjectClass.TYPE)
-
-
-class SchemaItem(Nonterm):
-
-    def reduce_SchemaObjectClass_NodeName(self, *kids):
-        ref = kids[1].val
-        ref.itemclass = kids[0].val.itemclass
-        self.val = ref

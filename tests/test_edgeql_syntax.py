@@ -2344,7 +2344,7 @@ aa';
 
     def test_edgeql_syntax_simple_call_01(self):
         """
-        SELECT get_nested_obj();
+        SELECT get_nested_obj()
         """
 
     @tb.must_fail(errors.EdgeQLSyntaxError,
