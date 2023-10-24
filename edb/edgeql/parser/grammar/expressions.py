@@ -71,6 +71,9 @@ class SimpleFor(Nonterm):
             result=result.val,
         )
 
+# XXXXX!!!! IT IS ABOUT x(...)!!!!
+# IT IS A CONFLICT AND WE ARE NOT FINDING IT!
+# BUT ALSO FUCKING OBVIOUSLY.
 
 class Expr(Nonterm):
     @parsing.inline(0)
