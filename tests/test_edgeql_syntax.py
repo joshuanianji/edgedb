@@ -50,7 +50,7 @@ class TestEdgeQLParser(EdgeQLSyntaxTest):
         for x in x union x
         """
 
-    def test_edgeql_syntax_simple_for_02(self):
+    def test_edgeql_syntax_simple_for_03(self):
         """
         for x in x (x)
 

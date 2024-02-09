@@ -42,34 +42,19 @@ class Nonterm(parsing.Nonterm):
 
 
 class ExprStmt(Nonterm):
-    @parsing.inline(0)
-    def reduce_SimpleFor(self, *kids):
-        pass
+    def reduce_For2(self, *kids):
+        r"%reduce FOR IDENT IN Expr LPAREN Expr RPAREN"
+        _, alias, _, iterator, _, result, _ = kids
+        self.val = qlast.ForQuery(
+            iterator_alias=alias.clean_value,
+            iterator=iterator.val,
+            result=result.val,
+        )
 
     @parsing.inline(0)
     def reduce_Expr(self, *kids):
         pass
 
-
-class SimpleFor(Nonterm):
-    def reduce_For(self, *kids):
-        r"%reduce FOR Identifier IN Expr UNION Expr"
-        _, alias, _, iterator, _, result = kids
-        self.val = qlast.ForQuery(
-            iterator_alias=alias.val,
-            iterator=iterator.val,
-            result=result.val,
-        )
-
-    # XXX! This breaks things!!! If this is present, the SELECT thing breaks!!
-    def reduce_For2(self, *kids):
-        r"%reduce FOR Identifier IN Expr LPAREN Expr RPAREN"
-        _, alias, _, iterator, _, result, _ = kids
-        self.val = qlast.ForQuery(
-            iterator_alias=alias.val,
-            iterator=iterator.val,
-            result=result.val,
-        )
 
 # XXXXX!!!! IT IS ABOUT x(...)!!!!
 # IT IS A CONFLICT AND WE ARE NOT FINDING IT!
@@ -94,12 +79,7 @@ class FuncExpr(Nonterm):
         self.val = qlast.FunctionCall(func=name, args=[], kwargs={})
 
 
-class Identifier(Nonterm):
-    def reduce_IDENT(self, ident):
-        self.val = ident.clean_value
-
-
 # COULD MERGE THIS INTO IDENTIFIER
 class NodeName(Nonterm):
-    def reduce_Identifier(self, base_name):
-        self.val = qlast.ObjectRef(name=base_name.val)
+    def reduce_IDENT(self, ident):
+        self.val = qlast.ObjectRef(name=ident.clean_value)
