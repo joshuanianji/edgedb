@@ -40,5 +40,5 @@ class EdgeQLGrammar(Nonterm):
     "%start"
 
     @parsing.inline(1)
-    def reduce_STARTBLOCK_ExprStmt_EOF(self, *kids):
+    def reduce_STARTBLOCK_Expr_EOF(self, *kids):
         pass

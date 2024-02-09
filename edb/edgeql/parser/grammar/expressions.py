@@ -41,7 +41,15 @@ class Nonterm(parsing.Nonterm):
     pass
 
 
-class ExprStmt(Nonterm):
+# XXXXX!!!! IT IS ABOUT x(...)!!!!
+# IT IS A CONFLICT AND WE ARE NOT FINDING IT!
+# BUT ALSO FUCKING OBVIOUSLY.
+
+class Expr(Nonterm):
+    def reduce_NodeName_LPAREN_RPAREN(self, *kids):
+        name = kids[0].val.name
+        self.val = qlast.FunctionCall(func=name, args=[], kwargs={})
+
     def reduce_For2(self, *kids):
         r"%reduce FOR IDENT IN Expr LPAREN Expr RPAREN"
         _, alias, _, iterator, _, result, _ = kids
@@ -51,32 +59,12 @@ class ExprStmt(Nonterm):
             result=result.val,
         )
 
-    @parsing.inline(0)
-    def reduce_Expr(self, *kids):
-        pass
-
-
-# XXXXX!!!! IT IS ABOUT x(...)!!!!
-# IT IS A CONFLICT AND WE ARE NOT FINDING IT!
-# BUT ALSO FUCKING OBVIOUSLY.
-
-class Expr(Nonterm):
-    @parsing.inline(0)
-    def reduce_FuncExpr(self, *kids):
-        pass
-
     # XXX: DROPPING THIS FIXES IT
     @parsing.precedence(precedence.P_DOT)
     def reduce_NodeName(self, *kids):
         self.val = qlast.Path(
             steps=[qlast.ObjectRef(name=kids[0].val.name,
                                    module=kids[0].val.module)])
-
-
-class FuncExpr(Nonterm):
-    def reduce_NodeName_LPAREN_RPAREN(self, *kids):
-        name = kids[0].val.name
-        self.val = qlast.FunctionCall(func=name, args=[], kwargs={})
 
 
 # COULD MERGE THIS INTO IDENTIFIER
