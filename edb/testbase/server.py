@@ -2023,7 +2023,9 @@ class _EdgeDBServer:
         reset_auth: Optional[bool] = None,
         tenant_id: Optional[str] = None,
         security: Optional[edgedb_args.ServerSecurityMode] = None,
-        default_auth_method: Optional[edgedb_args.ServerAuthMethod] = None,
+        default_auth_method: Optional[
+            edgedb_args.ServerAuthMethod | edgedb_args.ServerAuthMethods
+        ] = None,
         binary_endpoint_security: Optional[
             edgedb_args.ServerEndpointSecurityMode] = None,
         http_endpoint_security: Optional[
@@ -2224,13 +2226,13 @@ class _EdgeDBServer:
             cmd += ['--tls-key-file', self.tls_key_file]
 
         if self.tls_client_ca_file:
-            cmd += ['--tls-client-ca-file', self.tls_client_ca_file]
+            cmd += ['--tls-client-ca-file', str(self.tls_client_ca_file)]
 
         if self.readiness_state_file:
             cmd += ['--readiness-state-file', self.readiness_state_file]
 
         if self.jws_key_file:
-            cmd += ['--jws-key-file', self.jws_key_file]
+            cmd += ['--jws-key-file', str(self.jws_key_file)]
 
         if self.jwt_sub_allowlist_file:
             cmd += ['--jwt-sub-allowlist-file', self.jwt_sub_allowlist_file]
@@ -2351,7 +2353,9 @@ def start_edgedb_server(
     reset_auth: Optional[bool] = None,
     tenant_id: Optional[str] = None,
     security: Optional[edgedb_args.ServerSecurityMode] = None,
-    default_auth_method: Optional[edgedb_args.ServerAuthMethod] = None,
+    default_auth_method: Optional[
+        edgedb_args.ServerAuthMethod | edgedb_args.ServerAuthMethods
+    ] = None,
     binary_endpoint_security: Optional[
         edgedb_args.ServerEndpointSecurityMode] = None,
     http_endpoint_security: Optional[
