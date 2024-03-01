@@ -5997,6 +5997,9 @@ class AlterProperty(PropertyMetaCommand, adapts=s_props.AlterProperty):
         schema = super()._alter_innards(schema, context)
 
         if src and (not was_comp and is_comp):
+            # delete this column, but do it in finialize, because constraints
+            # might still depend on it
+            return schema
             self._delete_property(
                 prop, src.scls, src.op, schema, orig_schema, context)
 
@@ -6040,6 +6043,28 @@ class AlterProperty(PropertyMetaCommand, adapts=s_props.AlterProperty):
                     prop, orig_schema, schema, context)
 
         return schema
+
+    def _alter_finalize(
+        self,
+        schema: s_schema.Schema,
+        context: sd.CommandContext,
+    ) -> s_schema.Schema:
+        schema = super()._alter_finalize(schema, context)
+
+        prop = self.scls
+        orig_schema = context.current().original_schema
+
+        src = context.get(s_sources.SourceCommandContext)
+        is_comp = prop.is_pure_computable(schema)
+        was_comp = prop.is_pure_computable(orig_schema)
+
+        if src and (not was_comp and is_comp):
+            self._delete_property(
+                prop, src.scls, src.op, schema, orig_schema, context
+            )
+
+        return schema
+
 
 
 class DeleteProperty(PropertyMetaCommand, adapts=s_props.DeleteProperty):
