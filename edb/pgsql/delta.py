@@ -6000,8 +6000,6 @@ class AlterProperty(PropertyMetaCommand, adapts=s_props.AlterProperty):
             # delete this column, but do it in finialize, because constraints
             # might still depend on it
             return schema
-            self._delete_property(
-                prop, src.scls, src.op, schema, orig_schema, context)
 
         if self.metadata_only:
             return schema
