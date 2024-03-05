@@ -5528,9 +5528,6 @@ class AlterLink(LinkMetaCommand, adapts=s_links.AlterLink):
 
         schema = super()._alter_innards(schema, context)
 
-        if not is_abs and (not was_comp and is_comp):
-            self._delete_link(link, schema, orig_schema, context)
-
         # We check whether otd has changed, rather than whether
         # it is an attribute on this alter, because it might
         # live on a nested SetOwned, for example.
@@ -5555,9 +5552,24 @@ class AlterLink(LinkMetaCommand, adapts=s_links.AlterLink):
 
         return schema
 
-    def _alter_finalize(self, schema, context):
+    def _alter_finalize(
+        self,
+        schema: s_schema.Schema,
+        context: sd.CommandContext,
+    ) -> s_schema.Schema:
         schema = super()._alter_finalize(schema, context)
         self.apply_scheduled_inhview_updates(schema, context)
+
+        orig_schema = context.current().original_schema
+
+        link = self.scls
+        is_abs = link.is_non_concrete(schema)
+        is_comp = link.is_pure_computable(schema)
+        was_comp = link.is_pure_computable(orig_schema)
+
+        if not is_abs and (not was_comp and is_comp):
+            self._delete_link(link, schema, orig_schema, context)
+
         return schema
 
 
@@ -5995,11 +6007,6 @@ class AlterProperty(PropertyMetaCommand, adapts=s_props.AlterProperty):
             self._create_property(prop, src, schema, orig_schema, context)
 
         schema = super()._alter_innards(schema, context)
-
-        if src and (not was_comp and is_comp):
-            # delete this column, but do it in finialize, because constraints
-            # might still depend on it
-            return schema
 
         if self.metadata_only:
             return schema
